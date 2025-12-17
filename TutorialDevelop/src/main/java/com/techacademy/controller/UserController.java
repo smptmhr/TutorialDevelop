@@ -55,14 +55,24 @@ public class UserController {
     }
     
     @GetMapping("/update/{id}/")
-    public String getUser(@PathVariable("id") Integer id, Model model) {
-        model.addAttribute("user", service.getUser(id));
+    public String getUser(@PathVariable("id") Integer id, Model model, User user) {
+        if(id != null) {
+            // 一覧画面から遷移
+            model.addAttribute("user", service.getUser(id));
+        } else {
+            // バリデーションエラーによってpostUser()から遷移
+            model.addAttribute("user", user);
+        }
         
         return "user/update";
     }
     
     @PostMapping("/update/{id}/")
-    public String postUser(User user) {
+    public String postUser(@Validated User user, BindingResult res, Model model) {
+        if(res.hasErrors()) {
+            return getUser(null, model, user);
+        }
+        
         service.saveUser(user);
         
         return "redirect:/user/list";
